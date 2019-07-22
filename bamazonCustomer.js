@@ -19,48 +19,35 @@ var connection = mysql.createConnection({
 // connect to the mysql server and sql database
 connection.connect(function(err) {
   if (err) throw err;
-  console.log(res)
-  // run the start function after the connection is made to prompt the user
-  start();
+  showItems()
 });
 
-// function which prompts the user for what action they should take
-function start() {
-  inquirer
-    .prompt({
-      name: "postOrBid",
-      type: "list",
-      message: "Would you like to [POST] an auction or [BID] on an auction?",
-      choices: ["POST", "BID", "EXIT"]
-    })
-    .then(function(answer) {
-      // based on their answer, either call the bid or the post functions
-      if (answer.postOrBid === "POST") {
-        postAuction();
-      }
-      else if(answer.postOrBid === "BID") {
-        bidAuction();
-      } else{
-        connection.end();
-      }
-    });
+function showItems() {
+  connection.query("SELECT * FROM products", function (err, res) {
+      // if (err) throw err;
+      // // console.log(res);
+      console.log(JSON.stringify(res, null, 2));
+      connection.end();
+      start()
+  });
 }
 
+
 // function to handle posting new items up for auction
-function postAuction() {
+function start() {
   // prompt for info about the item being put up for auction
   inquirer
     .prompt([
-      {
-        name: "item",
-        type: "input",
-        message: "What is the item you would like to submit?"
-      },
-      {
-        name: "category",
-        type: "input",
-        message: "What category would you like to place your auction in?"
-      },
+      // {
+      //   name: "itemNumber",
+      //   type: "input",
+      //   message: "What is the item product number?"
+      // },
+      // {
+      //   name: "amount",
+      //   type: "input",
+      //   message: "How many do you want to buy?"
+      // },
       {
         name: "startingBid",
         type: "input",
@@ -73,27 +60,24 @@ function postAuction() {
         }
       }
     ])
-    .then(function(answer) {
+    .then(function(res) {
       // when finished prompting, insert a new item into the db with that info
       connection.query(
-        "INSERT INTO auctions SET ?",
+        "INSERT INTO products SET ?",
         {
-          item_name: answer.item,
-          category: answer.category,
-          starting_bid: answer.startingBid || 0,
-          highest_bid: answer.startingBid || 0
+          item_name: res.item_id,
+          buyAmount: res.quantity || 0,
         },
         function(err) {
           if (err) throw err;
-          console.log("Your auction was created successfully!");
-          // re-prompt the user for if they want to bid or post
-          start();
+          console.log("Buying Item");
+          buyItem();
         }
       );
     });
 }
 
-function bidAuction() {
+function buyItem() {
   // query the database for all items being auctioned
   connection.query("SELECT * FROM auctions", function(err, results) {
     if (err) throw err;
@@ -110,12 +94,12 @@ function bidAuction() {
             }
             return choiceArray;
           },
-          message: "What auction would you like to place a bid in?"
+          message: "What change this from auction"
         },
         {
-          name: "bid",
+          name: "buy",
           type: "input",
-          message: "How much would you like to bid?"
+          message: "How many do you want to buy?"
         }
       ])
       .then(function(answer) {
