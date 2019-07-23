@@ -67,17 +67,12 @@ var customerInput = function (response) {
             console.log("Insufficient quantity available!");
             showItems();
 
-          // } else if (response[id].quantity < parseInt(answer.amount)) {
-          //     connection.query("UPDATE products SET quantity" + (response[id].quantity-answer.quantity) + "'WHERE item_ID'" + item + "'", function(err, response2) {
-          //       console.log("Product was purchased.");
-          //       showItems();
-          //     })
+            // Takes amount in response minus the user amount input.
             } else if (response[id].quantity > parseInt(answer.amount)) {
               connection.query("UPDATE products SET ? WHERE ?",
               [
                 {
-                  // currently any value entered updates to the amount entered, not actually deducts amount.
-                  quantity: -answer.amount
+                  quantity: response[id].quantity-answer.amount
                 },
                 {
                   item_id: item
@@ -93,7 +88,7 @@ var customerInput = function (response) {
       }
       if(i == response.length && correct == false){
         showItems();
-        console.log("Not a valid selection!2");
+        console.log("Not a valid selection!");
       }
     }
   })
