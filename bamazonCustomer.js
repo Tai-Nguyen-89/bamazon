@@ -76,13 +76,15 @@ var customerInput = function (response) {
               connection.query("UPDATE products SET ? WHERE ?",
               [
                 {
-                  quantity: answer.amount--
+                  // currently any value entered updates to the amount entered, not actually deducts amount.
+                  quantity: -answer.amount
                 },
                 {
                   item_id: item
                 }
               ] 
               )
+              showItems();
             } else {
               showItems();
               console.log("Not a valid selection!");
