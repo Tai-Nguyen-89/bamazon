@@ -32,6 +32,7 @@ function showItems() {
         " --- Price: " + response[i].price +
         " --- Quantity: " + response[i].quantity + "\n");
     }
+    customerInput(response);
   });
 }
 
@@ -39,7 +40,7 @@ var customerInput = function (response) {
   inquirer.prompt([{
     type: "input",
     name: "choice",
-    message: "What would you like to purchase?"
+    message: "What is the item number you would like to purchase"
 
     // When customer gives an answer, it'll loop through the array and look for that item ID. If there is one, it'll say the response is true and set the input to item.
   }]).then(function (answer) {
@@ -52,7 +53,7 @@ var customerInput = function (response) {
 
         inquirer.prompt({
           type: "input",
-          name: "quantity",
+          name: "amount",
           message: "How many do you want to buy?",
           validate: function (value) {
             if (isNaN(value) == false) {
@@ -62,13 +63,22 @@ var customerInput = function (response) {
             }
           }
         }).then(function (answer) {
-          if ((response[id].quantity-answer.quantity) > 0) {
-            connection.query("UPDATE products SET quantity='" + (response[id].quantity-answer.quantity + "'WHERE item_ID'" + item + "'", function(err, response2) {
-              console.log("Item bought!");
-              makeTable();
+          if ((response[id].quantity >= answer.amount)) {
+            connection.query(
+              // "UPDATE products SET quantity='" + (response[id].quantity-answer.quantity) + "'WHERE item_ID'" + item + "'", 
+            function(err, response2) {
+              console.log("Insufficient quantity!");
+              showItems();
             })
+
+          } else if ((response[id].quantity-answer.amount) > 0) {
+              connection.query("UPDATE products SET quantity='" + (response[id].quantity-answer.quantity) + "'WHERE item_ID'" + item + "'", function(err, response2) {
+                console.log("Product was purchased.");
+                showItems();
+              })
+
           } else {
-            console.log("Item is not a valid selection!");
+            console.log("Unable to process order. Please try again.");
             promptCustomer(response);
           }
         })
