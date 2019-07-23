@@ -63,25 +63,35 @@ var customerInput = function (response) {
             }
           }
         }).then(function (answer) {
-          if ((response[id].quantity >= answer.amount)) {
-            connection.query(
-              // "UPDATE products SET quantity='" + (response[id].quantity-answer.quantity) + "'WHERE item_ID'" + item + "'", 
-            function(err, response2) {
-              console.log("Insufficient quantity!");
+          if ((response[id].quantity < answer.amount)) {
+            console.log("Insufficient quantity available!");
+            showItems();
+
+          // } else if (response[id].quantity < parseInt(answer.amount)) {
+          //     connection.query("UPDATE products SET quantity" + (response[id].quantity-answer.quantity) + "'WHERE item_ID'" + item + "'", function(err, response2) {
+          //       console.log("Product was purchased.");
+          //       showItems();
+          //     })
+            } else if (response[id].quantity > parseInt(answer.amount)) {
+              connection.query("UPDATE products SET ? WHERE ?",
+              [
+                {
+                  quantity: answer.amount--
+                },
+                {
+                  item_id: item
+                }
+              ] 
+              )
+            } else {
               showItems();
-            })
-
-          } else if ((response[id].quantity-answer.amount) > 0) {
-              connection.query("UPDATE products SET quantity='" + (response[id].quantity-answer.quantity) + "'WHERE item_ID'" + item + "'", function(err, response2) {
-                console.log("Product was purchased.");
-                showItems();
-              })
-
-          } else {
-            console.log("Unable to process order. Please try again.");
-            promptCustomer(response);
-          }
+              console.log("Not a valid selection!");
+            }
         })
+      }
+      if(i == response.length && correct == false){
+        showItems();
+        console.log("Not a valid selection!2");
       }
     }
   })
